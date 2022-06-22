@@ -74,11 +74,13 @@ def get_domain():
 
 # 获取防御等级
 def get_safe():
+
+    _safeLoad = __getSafeLoad()['safe_load']
     data = {
         "wait": 300,  # 负载恢复后的等待周期
         "sleep": 5,  # 检测周期
         "check": 30,  # 持续监测时间
-        "load": json.loads(get_safe_load())['safe_load'],  # 安全负载
+        "load": _safeLoad,  # 安全负载
     }
     if not os.path.exists(SAFE_FILE_PATH):
         mw.writeFile(SAFE_FILE_PATH, json.dumps(data))
@@ -88,8 +90,7 @@ def get_safe():
             "wait": data['wait'] if data['wait'] else 300,
             "sleep": data['sleep'] if data['sleep'] else 5,
             "check": data['check'] if data['check'] else 30,
-            # 安全负载
-            "load": data['load'] if data['load'] else json.loads(get_safe_load())['safe_load'],
+            "load": data['load'] if data['load'] else _safeLoad,
         }
     except:
         mw.writeFile(SAFE_FILE_PATH, json.dumps(data))
@@ -132,16 +133,16 @@ def set_safe():
     sleep = args['sleep']
     load = args['load']
     if not check or not wait or not sleep or not load:
-        return json.dumps({'code': -1, 'msg': '必填项不能为空'})
+        return __out(False, "必填项不能为空")
     if int(check) <= 0 or int(wait) <= 0 or int(sleep) <= 0 or float(load) <= 0:
-        return json.dumps({'code': -1, 'msg': '数值必须为大于0的整数'})
+        return __out(False, "数值必须为大于0的整数")
     mw.writeFile(SAFE_FILE_PATH, json.dumps({
         "wait": int(wait),  # 负载恢复后的等待周期
         "sleep": int(sleep),  # 检测周期
         "check": int(check),  # 持续监测时间
         "load": round(float(load), 2),
     }))
-    return json.dumps({'code': 200})
+    return __out()
 
 # 设置域名security mode
 
@@ -164,13 +165,16 @@ def set_domain_security():
             '设置域名[{}]的防御等级为[{}]'.format(
                 domainName, __transform_mode(mode))
         )
-        return {'code': 200, 'msg': 'success', 'data': {'mode_name': __transform_mode(mode)}}
+        return __out(data = {
+            "mode_name": __transform_mode(mode)
+        })
     else:
         mw.writeLog(
             PLUGIN_NAME,
             '设置域名[{}]的防御等级为[{}]时出错: {}'.format(
                 domainName, mode, response['errors'])
         )
+    return __out(False)
 
 
 # 设置域名是否自动开盾
@@ -210,13 +214,13 @@ def refresh_domain():
             'index': index
         }
         mw.writeFile(DOMAIN_FILE_PATH, json.dumps(res))
-        return {'code': 200, 'msg': 'success', 'count': count}
+        return __out(data = {"count": count})
     # 获取失败
     mw.writeLog(
         PLUGIN_NAME,
         "尝试登录时遇到错误 > " + json.dumps(response['errors'])
     )
-    return json.dumps({'code': -1, 'msg': "邮箱或API密钥错误"})
+    return __out(False, "邮箱或API密钥错误")
 
 
 # 刷新所有域名的防护等级
@@ -241,7 +245,7 @@ def refresh_domain_security():
 def get_safe_load():
     cpuCount = psutil.cpu_count()
     safe_load = cpuCount * 1.75
-    return __out(True, "", {'cpu_count': cpuCount, 'safe_load': safe_load})
+    return __out(True, "", __getSafeLoad())
 
 # 转换mode 名称
 def __transform_mode(mode):
@@ -266,6 +270,11 @@ def __getDomainNameById(id):
         if v['id'] == id:
             return k
 
+
+def __getSafeLoad():
+    cpuCount = psutil.cpu_count()
+    safe_load = cpuCount * 1.75
+    return {'cpu_count': cpuCount, 'safe_load': safe_load}
 
 def __out(success: bool = True, msg: str = "ok", data: dict = {}):
     return json.dumps({

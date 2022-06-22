@@ -70,8 +70,8 @@
 
             $('.plugin_body').html(html);
             var index = layer.load(0);
-            request_plugin('get_status', {}, function (data) { //获取状态
-                if (data.runStatus) {
+            request_plugin('get_status', {}, function (res) {  // 获取状态
+                if (res.data.runStatus) {
                     $('.runStatus').html(startingHtml)
                 } else {
                     $('.runStatus').html(stopingHtml)
