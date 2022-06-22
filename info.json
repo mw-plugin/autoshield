@@ -1,0 +1,16 @@
+{
+  "title": "cloudflare自动开盾",
+  "tip": "soft",
+  "name": "autoshield",
+  "type": "其他插件",
+  "ps": "服务器遭受攻击时，自动打开5秒盾",
+  "updates": "2.0.1",
+  "versions": "2.0.1",
+  "shell": "install.sh",
+  "checks": "server/autoshield",
+  "path": "server/autoshield",
+  "author": "xcsoft",
+  "home": "https://xsot.cn",
+  "date": "2022-06-22",
+  "pid": 5
+}
