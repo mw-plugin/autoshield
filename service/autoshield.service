@@ -13,8 +13,8 @@ After=network.target
 Type=simple
 User=root
 Group=root
-WorkingDirectory={$SERVER_PATH}/autoshield
-ExecStart=python3 {$SERVER_PATH}/autoshield/autoshield.py
+WorkingDirectory=/www/server/autoshield
+ExecStart=python3 /www/server/autoshield/autoshield.py
 Restart=always
 
 # Some distributions may not support these hardening directives. If you cannot start the service due

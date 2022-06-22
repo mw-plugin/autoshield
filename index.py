@@ -132,6 +132,8 @@ def stop():
 
 
 def set_setting():
+    args = __getArgs()
+    return args
     email = args['email']
     key = args['key']
     if not email or not key:

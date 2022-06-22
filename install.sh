@@ -2,13 +2,9 @@
 PATH=/www/server/panel/pyenv/bin:/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:~/bin
 export PATH
 
+serverPath="/www/server"
 #配置插件安装目录
-curPath=`pwd`
-rootPath=$(dirname "$curPath")
-rootPath=$(dirname "$rootPath")
-serverPath=$(dirname "$rootPath")
-
-install_tmp=${rootPath}/tmp/mw_install.pl
+install_tmp=${rootPath}/mdserver-web/tmp/mw_install.pl
 
 #安装
 Install()
@@ -30,7 +26,7 @@ Install()
 	mkdir $serverPath/autoshield/config/dns
 	mkdir $serverPath/autoshield/log
 	
-	python3 $serverPath/autoshield/serviced.py
+	cp $serverPath/autoshield/service/autoshield.service /lib/systemd/system/autoshield.service
 	systemctl daemon-reload
 	systemctl enable autoshield
 	#依赖安装结束
