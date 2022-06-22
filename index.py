@@ -218,9 +218,9 @@ def refresh_domain():
     # 获取失败
     mw.writeLog(
         PLUGIN_NAME,
-        "尝试登录时遇到错误 > " + json.dumps(response['errors'])
+        "登录时遇到错误 > " + json.dumps(response['errors'])
     )
-    return __out(False, "邮箱或API密钥错误")
+    return __out(False, "邮箱或密钥错误")
 
 
 # 刷新所有域名的防护等级

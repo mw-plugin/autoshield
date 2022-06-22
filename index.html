@@ -228,38 +228,6 @@
         },
     }
 
-    // 获取域名 dns记录
-    function domain_dns(domain, id) {
-        html = "\
-            <button class='btn btn-success btn-sm' type='button' style='margin-bottom:12px;' onclick='autoshield.get_domain()'>＜返回</button>\
-            <button class='btn btn-success btn-sm' type='button' style='margin-bottom:12px;' onclick='update_domain_dns(\"$domain\",\"$zone\")'>更新解析列表</button>\
-            <button class='btn btn-success btn-sm' type='button' style='margin-bottom:12px;' onclick='add_domain_dns(\"$domain\",\"$zone\")'>添加记录</button>\
-            <div style='max-height:480px;overflow:auto;border:#ddd'>\
-                <div class='divtable'>\
-                    <table width='100%' border='0' cellpadding='0' cellspacing='0' class='table table-hover'>\
-                    <thead>\
-                        <tr>\
-                            <th>类型</th>\
-                            <th>名称</th>\
-                            <th>内容</th>\
-                            <th>TTL</th>\
-                            <th>CDN</th>\
-                            <th>管理</th>\
-                        </tr>\
-                    </thead>\
-                    <tbody>\
-                        \
-                    </tbody>\
-                    </table>\
-                </div>\
-            </div>\
-            "
-        $('.plugin_body').html(html)
-        request_plugin('get_domain_dns', { 'domainId': id }, (data) => {
-            console.log(data)
-        })
-    }
-
     function set_security(domain, id, obj) {
         security = $(obj).text()
         securitylist = layer.open({
@@ -352,17 +320,21 @@
         var cfkey = $('.autoshield_setting #cfkey').val();
 
         layer.msg('保存中', { icon: 16, time: 0, shade: 0.3 });
-        request_plugin('set_setting', { 'email': cfemail, 'key': cfkey }, (data) => {
-            // 成功 > 请求所有域名
+        request_plugin('set_setting', { 'email': cfemail, 'key': cfkey }, (res) => {
+            if (res.success == false) {
+                return layer.msg(res.msg, { icon: 2, time: 1500 })
+            }
             layer.msg('获取用户域名列表', { icon: 16, time: 0, shade: 0.3 });
-            request_plugin('refresh_domain', {}, (data) => {
-                if (data.code !== 0)
-                    layer.msg('获取域名防御等级(此过程可能耗时较长)', { icon: 16, time: 0, shade: 0.3 });
-                request_plugin('refresh_domain_security', {}, (data) => {
+            request_plugin('refresh_domain', {}, (res) => {
+                if (res.success == false) {
+                    return layer.msg(res.msg, { icon: 2, time: 1500 })
+                }
+                layer.msg('获取域名防御等级(此过程可能耗时较长)', { icon: 16, time: 0, shade: 0.3 });
+                request_plugin('refresh_domain_security', {}, (res) => {
                     layer.msg('保存成功!', { icon: 1, time: 1500 })
                     restart_normal()
                 }, timeout = 0)
-            }, false);  // 成功 > 尝试请求域名目前防御等级
+            }, false);
         });
     }
 
@@ -396,7 +368,7 @@
                     layer.closeAll('loading')
                 }
                 rdata = JSON.parse(rdata)
-                
+
                 if (rdata.status != undefined && !rdata.status) {
                     layer.open({
                         type: 1,
