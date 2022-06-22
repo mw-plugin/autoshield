@@ -29,32 +29,14 @@ DOMAIN_DNS_BASE_PATH = PLUGIN_PATH + 'config/dns/'  # 用户域名temp文件路�
 PER_PAGE = 200  # 获取的域名个数 值应该在1到1000之间
 
 
-def __getArgs():
-    args = sys.argv[2:]
-    tmp = {}
-    args_len = len()
-
-    if args_len == 1:
-        t = args[0].strip('{').strip('}')
-        t = t.split(':')
-        tmp[t[0]] = t[1]
-    elif args_len > 1:
-        for i in range(len()):
-            t = args[i].split(':')
-            tmp[t[0]] = t[1]
-
-    return tmp
-
-
 # 获取服务运行状态
 def get_status():
     result = mw.execShell('ps -C {} -f'.format(FIREWALL_SERVICE_NAME))
     runStatus = FIREWALL_SERVICE_NAME in result[0]
-    return json.dumps({'runStatus': runStatus})
+    return __out(data = {'runStatus': runStatus})
+
 
 # 获取 cloudflare key & email
-
-
 def get_setting():
     default = {
         'email': "",
@@ -64,13 +46,14 @@ def get_setting():
         mw.writeFile(SETTING_FILE_PATH, json.dumps(default))
     try:
         data = json.loads(mw.readFile(SETTING_FILE_PATH))
-        return {
+        default = {
             'key': data['key'] if data['key'] else '',
             'email': data['email'] if data['email'] else '',
         }
     except:
         mw.writeFile(SETTING_FILE_PATH, json.dumps(default))
-    return json.dumps(default)
+
+    return __out(data = default)
 
 
 def get_domain():
@@ -81,16 +64,15 @@ def get_domain():
         for k, v in response['domains'].items():
             data[k] = {
                 "id": v['id'],
-                "security": __transform_moed(v['security']),
+                "security": __transform_mode(v['security']),
                 "status": v['status']
             }
-        return json.dumps({'code': 200, 'data': data})
+        return __out(data = data)
     except:
-        return json.dumps({'code': -1, 'msg': '请先配置密钥信息'})
+        return __out(False, "请先配置密钥信息")
+
 
 # 获取防御等级
-
-
 def get_safe():
     data = {
         "wait": 300,  # 负载恢复后的等待周期
@@ -114,40 +96,35 @@ def get_safe():
 
     return json.dumps(data)
 
+
 # 启动服务
-
-
 def start():
     mw.execShell("systemctl start autoshield")
-    return json.dumps({'code': 200})
+    return __out(True)
+
 
 # 停止服务
-
-
 def stop():
     mw.execShell("systemctl stop autoshield")
-    return json.dumps({'code': 200})
+    return __out(True)
+
 
 # 设置cloudflare key & email
-
-
 def set_setting():
     args = __getArgs()
-    return args
     email = args['email']
     key = args['key']
     if not email or not key:
-        return {'code': -1, 'msg': '必填项不能为空'}
+        return __out(False, "", {'success': False, 'msg': '必填项不能为空'})
 
     mw.writeFile(SETTING_FILE_PATH, json.dumps({
         'email': email,
         'key': key
     }))
-    return json.dumps({'msg': 'success'})
+    return __out(True)
+
 
 # 设置 防护属性
-
-
 def set_safe():
     check = args['check']
     wait = args['wait']
@@ -183,9 +160,9 @@ def set_domain_security():
         mw.writeLog(
             PLUGIN_NAME,
             '设置域名[{}]的防御等级为[{}]'.format(
-                domainName, __transform_moed(mode))
+                domainName, __transform_mode(mode))
         )
-        return {'code': 200, 'msg': 'success', 'data': {'mode_name': __transform_moed(mode)}}
+        return {'code': 200, 'msg': 'success', 'data': {'mode_name': __transform_mode(mode)}}
     else:
         mw.writeLog(
             PLUGIN_NAME,
@@ -238,7 +215,7 @@ def refresh_domain():
         PLUGIN_NAME,
         "尝试登录时遇到错误 > " + json.dumps(response['errors'])
     )
-    return {'code': -1, 'msg': "邮箱或API密钥错误<br/>(您可以在面板安全板块查询详细错误信息)"}
+    return json.dumps({'code': -1, 'msg': "邮箱或API密钥错误"})
 
 # 刷新所有域名的防护等级
 
@@ -261,18 +238,16 @@ def refresh_domain_security():
         'code': 200,
     }
 
+
 # 获取安全负载
-
-
 def get_safe_load():
     cpuCount = psutil.cpu_count()
     safe_load = cpuCount * 1.75
     return json.dumps({'cpu_count': cpuCount, 'safe_load': safe_load})
 
+
 # 转换mode 名称
-
-
-def __transform_moed(mode):
+def __transform_mode(mode):
     if mode == 'low':
         return '低'
     elif mode == 'medium':
@@ -286,14 +261,38 @@ def __transform_moed(mode):
     else:
         return '未知'
 
+
 # 通过域名ID获取域名名称
-
-
 def __getDomainNameById(id):
     res = json.loads(mw.readFile(DOMAIN_FILE_PATH, mode="r+"))
     for k, v in res['domains'].items():
         if v['id'] == id:
             return k
+
+
+def __out(success: bool = True, msg: str = "ok", data: dict = {}):
+    return json.dumps({
+        "success": success,
+        "msg": msg,
+        "data": data
+    })
+
+
+def __getArgs():
+    args = sys.argv[2:]
+    tmp = {}
+    args_len = len(args)
+
+    if args_len == 1:
+        t = args[0].strip('{').strip('}')
+        t = t.split(':')
+        tmp[t[0]] = t[1]
+    elif args_len > 1:
+        for i in range(len(args)):
+            t = args[i].split(':')
+            tmp[t[0]] = t[1]
+
+    return tmp
 
 
 class Cloudflare:

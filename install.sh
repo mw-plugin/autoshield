@@ -26,7 +26,7 @@ Install()
 	mkdir $serverPath/autoshield/config/dns
 	mkdir $serverPath/autoshield/log
 	
-	cp $serverPath/autoshield/service/autoshield.service /lib/systemd/system/autoshield.service
+	cp $serverPath/mdserver-web/plugins/autoshield/service/autoshield.service /lib/systemd/system/autoshield.service
 	systemctl daemon-reload
 	systemctl enable autoshield
 	#依赖安装结束
