@@ -161,16 +161,22 @@
             </div>"
             $('.plugin_body').html(html);
             var index = layer.load(0);
-            request_plugin('get_safe', {}, function (rdata) {
-                $('.autoshield_safe #wait').val(rdata.wait)
-                $('.autoshield_safe #sleep').val(rdata.sleep)
-                $('.autoshield_safe #check').val(rdata.check)
-                $('.autoshield_safe #load').val(rdata.load)
-                $('.autoshield_safe #load').attr('placeholder', rdata.load)
+            request_plugin('get_safe', {}, function (res) {
+                if (res.success == false) {
+                    return layer.msg(res.msg, { icon: 2, time: 1500 })
+                }
+                $('.autoshield_safe #wait').val(res.data.wait)
+                $('.autoshield_safe #sleep').val(res.data.sleep)
+                $('.autoshield_safe #check').val(res.data.check)
+                $('.autoshield_safe #load').val(res.data.load)
+                $('.autoshield_safe #load').attr('placeholder', res.data.load)
             });
-            request_plugin('get_safe_load', {}, function (rdata) {
-                $('.autoshield_safe #cpuCount').text(rdata.cpu_count)
-                $('.autoshield_safe #safeLoad').text(rdata.safe_load)
+            request_plugin('get_safe_load', {}, function (res) {
+                if (res.success == false) {
+                    return layer.msg(res.msg, { icon: 2, time: 1500 })
+                }
+                $('.autoshield_safe #cpuCount').text(res.data.cpu_count)
+                $('.autoshield_safe #safeLoad').text(res.data.safe_load)
             }, false);
         },
         get_domain: () => {
@@ -352,7 +358,7 @@
         })
     }
 
-    function request_plugin(function_name, args, callback, index = true, timeout = 15000) {
+    function request_plugin(function_name, args, callback, index = true, timeout = 20000) {
         $.ajax({
             type: 'POST',
             url: '/plugins/run',
