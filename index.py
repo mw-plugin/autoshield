@@ -6,18 +6,19 @@
 # @Author xcsoft<contact@xcsoft.top>
 # @Date 2021 11 23
 # @Last Edit Date 2022 06 22
+
 import os
 import sys
 import json
 import requests
 import psutil
 
-sys.path.append(os.getcwd() + "/class/core")
+sys.path.append("/www/server/mdserver-web/class/core")
 import mw
 
 PLUGIN_NAME = 'autoshield'
 FIREWALL_SERVICE_NAME = 'autoshield.py'
-PLUGIN_PATH = "{}/../{}/".format(os.getcwd(), PLUGIN_NAME)
+PLUGIN_PATH = "/www/server/{}/".format(os.getcwd(), PLUGIN_NAME)
 FIREWALL_SERVICE_PATH = PLUGIN_PATH + FIREWALL_SERVICE_NAME
 
 SETTING_FILE_PATH = PLUGIN_PATH + 'config/setting.json'  # setting文件路径
@@ -27,13 +28,33 @@ DOMAIN_DNS_BASE_PATH = PLUGIN_PATH + 'config/dns/'  # 用户域名temp文件路�
 
 PER_PAGE = 200  # 获取的域名个数 值应该在1到1000之间
 
+
+def __getArgs():
+    args = sys.argv[2:]
+    tmp = {}
+    args_len = len()
+
+    if args_len == 1:
+        t = args[0].strip('{').strip('}')
+        t = t.split(':')
+        tmp[t[0]] = t[1]
+    elif args_len > 1:
+        for i in range(len()):
+            t = args[i].split(':')
+            tmp[t[0]] = t[1]
+
+    return tmp
+
+
 # 获取服务运行状态
 def get_status():
-    result = mw.execShell('ps -C autoshield_main.py -f')
+    result = mw.execShell('ps -C {} -f'.format(FIREWALL_SERVICE_NAME))
     runStatus = FIREWALL_SERVICE_NAME in result[0]
     return json.dumps({'runStatus': runStatus})
 
 # 获取 cloudflare key & email
+
+
 def get_setting():
     default = {
         'email': "",
@@ -51,6 +72,7 @@ def get_setting():
         mw.writeFile(SETTING_FILE_PATH, json.dumps(default))
     return json.dumps(default)
 
+
 def get_domain():
     try:
         res = mw.readFile(DOMAIN_FILE_PATH)
@@ -67,6 +89,8 @@ def get_domain():
         return json.dumps({'code': -1, 'msg': '请先配置密钥信息'})
 
 # 获取防御等级
+
+
 def get_safe():
     data = {
         "wait": 300,  # 负载恢复后的等待周期
@@ -78,28 +102,35 @@ def get_safe():
         mw.writeFile(SAFE_FILE_PATH, json.dumps(data))
     try:
         data = json.loads(mw.readFile(SAFE_FILE_PATH))
-        data =  {
+        data = {
             "wait": data['wait'] if data['wait'] else 300,
             "sleep": data['sleep'] if data['sleep'] else 5,
             "check": data['check'] if data['check'] else 30,
-            "load": data['load'] if data['load'] else json.loads(get_safe_load())['safe_load'],  # 安全负载
+            # 安全负载
+            "load": data['load'] if data['load'] else json.loads(get_safe_load())['safe_load'],
         }
     except:
         mw.writeFile(SAFE_FILE_PATH, json.dumps(data))
-    
+
     return json.dumps(data)
 
 # 启动服务
+
+
 def start():
     mw.execShell("systemctl start autoshield")
     return json.dumps({'code': 200})
 
 # 停止服务
+
+
 def stop():
     mw.execShell("systemctl stop autoshield")
     return json.dumps({'code': 200})
 
 # 设置cloudflare key & email
+
+
 def set_setting():
     email = args['email']
     key = args['key']
@@ -113,6 +144,8 @@ def set_setting():
     return json.dumps({'msg': 'success'})
 
 # 设置 防护属性
+
+
 def set_safe():
     check = args['check']
     wait = args['wait']
@@ -131,6 +164,8 @@ def set_safe():
     return json.dumps({'code': 200})
 
 # 设置域名security mode
+
+
 def set_domain_security():
     id = args['id']
     mode = args['mode']
@@ -157,6 +192,8 @@ def set_domain_security():
         )
 
 # 设置域名是否自动开盾
+
+
 def setDomainStatus():
     domainName = args['domainName']
     res = json.loads(mw.readFile(DOMAIN_FILE_PATH, mode="r+"))
@@ -165,6 +202,8 @@ def setDomainStatus():
     return {'code': 200}
 
 # 刷新域名列表
+
+
 def refresh_domain():
     response = Cloudflare().getDomain()
     if response['success']:
@@ -200,6 +239,8 @@ def refresh_domain():
     return {'code': -1, 'msg': "邮箱或API密钥错误<br/>(您可以在面板安全板块查询详细错误信息)"}
 
 # 刷新所有域名的防护等级
+
+
 def refresh_domain_security():
     domainList = json.loads(mw.readFile(DOMAIN_FILE_PATH))
     for domainName, v in domainList['domains'].items():
@@ -219,12 +260,16 @@ def refresh_domain_security():
     }
 
 # 获取安全负载
+
+
 def get_safe_load():
     cpuCount = psutil.cpu_count()
     safe_load = cpuCount * 1.75
     return json.dumps({'cpu_count': cpuCount, 'safe_load': safe_load})
 
 # 转换mode 名称
+
+
 def __transform_moed(mode):
     if mode == 'low':
         return '低'
@@ -240,6 +285,8 @@ def __transform_moed(mode):
         return '未知'
 
 # 通过域名ID获取域名名称
+
+
 def __getDomainNameById(id):
     res = json.loads(mw.readFile(DOMAIN_FILE_PATH, mode="r+"))
     for k, v in res['domains'].items():
@@ -249,6 +296,7 @@ def __getDomainNameById(id):
 
 class Cloudflare:
     __base_url = "https://api.cloudflare.com/client/v4/"
+
     def __init__(self):
         data = json.loads(mw.readFile(SETTING_FILE_PATH))
         self.key = data['key'] if data['key'] else ''
@@ -315,22 +363,7 @@ class Cloudflare:
         )
         return response.json()
 
-def __getArgs():
-    args = sys.argv[2:]
-    tmp = {}
-    args_len = len()
-    
-    if args_len == 1:
-        t = args[0].strip('{').strip('}')
-        t = t.split(':')
-        tmp[t[0]] = t[1]
-    elif args_len > 1:
-        for i in range(len()):
-            t = args[i].split(':')
-            tmp[t[0]] = t[1]
 
-    return tmp
-    
 if __name__ == "__main__":
     config_path = PLUGIN_PATH + 'config/'
     dns_path = PLUGIN_PATH + 'config/dns/'
@@ -357,7 +390,7 @@ if __name__ == "__main__":
         print(set_setting())
     elif func == "set_safe":
         print(set_safe())
-        
+
     elif func == "set_domain_security":
         print(set_domain_security())
     elif func == "setDomainStatus":
@@ -368,7 +401,6 @@ if __name__ == "__main__":
         print(refresh_domain_security())
     elif func == "get_safe_load":
         print(get_safe_load())
-        
+
     else:
         print("unknown func")
-         

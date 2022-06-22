@@ -17,7 +17,7 @@ sys.path.append("/www/server/mdserver-web/class/core")
 import mw
 
 PLUGIN_NAME = 'autoshield'
-PLUGIN_PATH = "{}/../{}/".format(os.getcwd(), PLUGIN_NAME)
+PLUGIN_PATH = "/www/server/{}/".format(os.getcwd(), PLUGIN_NAME)
 
 SETTING_FILE_PATH = PLUGIN_PATH + 'config/setting.json'  # setting文件路径
 SAFE_FILE_PATH = PLUGIN_PATH + 'config/safe.json'  # safe文件路径
