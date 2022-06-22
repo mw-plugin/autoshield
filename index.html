@@ -107,9 +107,11 @@
                 </div>"
             $('.plugin_body').html(html);
             var index = layer.load(0);
-            request_plugin('get_setting', {}, function (data) {
-                $('.autoshield_setting #cfemail').val(data.email);
-                $('.autoshield_setting #cfkey').val(data.key);
+            request_plugin('get_setting', {}, function (res) {
+                if (res.success) {
+                    $('.autoshield_setting #cfemail').val(res.data.email);
+                    $('.autoshield_setting #cfkey').val(res.data.key);
+                }
             });
         },
         get_about: () => {

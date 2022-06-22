@@ -33,7 +33,7 @@ PER_PAGE = 200  # 获取的域名个数 值应该在1到1000之间
 def get_status():
     result = mw.execShell('ps -C {} -f'.format(FIREWALL_SERVICE_NAME))
     runStatus = FIREWALL_SERVICE_NAME in result[0]
-    return __out(data = {'runStatus': runStatus})
+    return __out(data={'runStatus': runStatus})
 
 
 # 获取 cloudflare key & email
@@ -53,7 +53,7 @@ def get_setting():
     except:
         mw.writeFile(SETTING_FILE_PATH, json.dumps(default))
 
-    return __out(data = default)
+    return __out(data=default)
 
 
 def get_domain():
@@ -67,7 +67,7 @@ def get_domain():
                 "security": __transform_mode(v['security']),
                 "status": v['status']
             }
-        return __out(data = data)
+        return __out(data=data)
     except:
         return __out(False, "请先配置密钥信息")
 
@@ -94,7 +94,7 @@ def get_safe():
     except:
         mw.writeFile(SAFE_FILE_PATH, json.dumps(data))
 
-    return json.dumps(data)
+    return __out(data=data)
 
 
 # 启动服务
@@ -126,6 +126,7 @@ def set_setting():
 
 # 设置 防护属性
 def set_safe():
+    args = __getArgs()
     check = args['check']
     wait = args['wait']
     sleep = args['sleep']
@@ -146,6 +147,7 @@ def set_safe():
 
 
 def set_domain_security():
+    args = __getArgs()
     id = args['id']
     mode = args['mode']
     domainName = __getDomainNameById(id)
@@ -170,19 +172,18 @@ def set_domain_security():
                 domainName, mode, response['errors'])
         )
 
+
 # 设置域名是否自动开盾
-
-
 def setDomainStatus():
+    args = __getArgs()
     domainName = args['domainName']
     res = json.loads(mw.readFile(DOMAIN_FILE_PATH, mode="r+"))
     res['domains'][domainName]['status'] = not res['domains'][domainName]['status']
     mw.writeFile(DOMAIN_FILE_PATH, json.dumps(res))
-    return {'code': 200}
+    return __out()
+
 
 # 刷新域名列表
-
-
 def refresh_domain():
     response = Cloudflare().getDomain()
     if response['success']:
@@ -217,9 +218,8 @@ def refresh_domain():
     )
     return json.dumps({'code': -1, 'msg': "邮箱或API密钥错误"})
 
+
 # 刷新所有域名的防护等级
-
-
 def refresh_domain_security():
     domainList = json.loads(mw.readFile(DOMAIN_FILE_PATH))
     for domainName, v in domainList['domains'].items():
@@ -234,17 +234,14 @@ def refresh_domain_security():
                     domainName, json.dumps(domainInfo['errors']))
             )
     mw.writeFile(DOMAIN_FILE_PATH, json.dumps(domainList))
-    return {
-        'code': 200,
-    }
+    return __out()
 
 
 # 获取安全负载
 def get_safe_load():
     cpuCount = psutil.cpu_count()
     safe_load = cpuCount * 1.75
-    return json.dumps({'cpu_count': cpuCount, 'safe_load': safe_load})
-
+    return __out(True, "", {'cpu_count': cpuCount, 'safe_load': safe_load})
 
 # 转换mode 名称
 def __transform_mode(mode):
@@ -276,7 +273,7 @@ def __out(success: bool = True, msg: str = "ok", data: dict = {}):
         "msg": msg,
         "data": data
     })
-
+    
 
 def __getArgs():
     args = sys.argv[2:]
