@@ -23,7 +23,20 @@ SETTING_FILE_PATH = PLUGIN_PATH + 'config/setting.json'  # setting文件路径
 SAFE_FILE_PATH = PLUGIN_PATH + 'config/safe.json'  # safe文件路径
 DOMAIN_FILE_PATH = PLUGIN_PATH + 'config/domain.json'  # 用户域名temp文件路径
 
-
+def writeLog(type, logMsg):
+    try:
+        import time
+        import db
+        import json
+        sql = db.Sql()
+        sql.__DB_FILE = '/www/server/mdserver-web/data/default.db'
+        mDate = time.strftime('%Y-%m-%d %X', time.localtime())
+        data = (type, logMsg, mDate)
+        result = sql.table('logs').add('type,log,addtime', data)
+    except Exception as e:
+        print(e)
+        pass
+    
 # 返回服务器的当前负载 (1min)
 def getLoadNow():
     return os.getloadavg()[0]
@@ -34,7 +47,7 @@ def getSafeInfo():
     try:
         data = json.loads(mw.readFile(SAFE_FILE_PATH))
     except:
-        mw.writeLog(PLUGIN_NAME, '请正确配置防护设置后重试')
+        writeLog(PLUGIN_NAME, '请正确配置防护设置后重试')
         print('请正确配置防护设置后重试')
         sys.exit()
     return data
@@ -45,7 +58,7 @@ def getUserDomainList():
     try:
         data = json.loads(mw.readFile(DOMAIN_FILE_PATH))
     except:
-        mw.writeLog(PLUGIN_NAME, '请检查密钥信息后重试')
+        writeLog(PLUGIN_NAME, '请检查密钥信息后重试')
         print('请检查密钥信息后重试')
         sys.exit()
     return data
@@ -74,7 +87,7 @@ def underAttack():
                 print('开启成功')
                 changeDomainSecurity(domainName, 'under_attack')
             else:
-                mw.writeLog(
+                writeLog(
                     PLUGIN_NAME,
                     '自动开盾时,{domain_name}开盾失败 > {error}'
                     .format(domain_name=domainName, error=json.dumps(response['errors']))
@@ -82,7 +95,7 @@ def underAttack():
                 print('开启失败 > 具体错误可以在面板/安全选项卡查询')
         else:
             print('用户未开启,跳过')
-    mw.writeLog(
+    writeLog(
         PLUGIN_NAME,
         '服务器遭遇攻击 > 开盾'
     )
@@ -106,7 +119,7 @@ def closeShield():
                 print('关闭成功')
                 changeDomainSecurity(domainName, 'medium')
             else:
-                mw.writeLog(
+                writeLog(
                     PLUGIN_NAME,
                     '关盾时,{domain_name}关闭失败 > {error}'
                     .format(domain_name=domainName, error=json.dumps(response['errors']))
@@ -114,7 +127,7 @@ def closeShield():
                 print('关闭失败 > 具体错误可以在面板/安全选项卡查询')
         else:
             print('用户未开启,跳过')
-    mw.writeLog(
+    writeLog(
         PLUGIN_NAME,
         '服务器遭遇攻击结束 > 关盾'
     )
@@ -212,7 +225,7 @@ def main():
             print("当前负载: {load_now}, 小于安全负载({load_safe})"
                   .format(load_now=load_now, load_safe=load_safe))
         else:
-            mw.writeLog(
+            writeLog(
                 PLUGIN_NAME, "服务器负载超过设定阀值,数值为{load_now} > 持续等待{check}秒判断"
                 .format(load_now=load_now, check=check)
             )
@@ -268,7 +281,7 @@ def main():
                     print('当前负载: {load_now} < 安全负载: {load_safe} > 威胁解除'
                           .format(load_now=load_now, load_safe=load_safe)
                           )
-                    mw.writeLog(
+                    writeLog(
                         PLUGIN_NAME, "服务器负载在{time_pass}后恢复到负载阀值以下,当前负载为{load_now} > 威胁解除"
                         .format(load_now=load_now, time_pass=time_pass)
                     )

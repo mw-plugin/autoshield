@@ -28,11 +28,15 @@ DOMAIN_DNS_BASE_PATH = PLUGIN_PATH + 'config/dns/'  # 用户域名temp文件路�
 
 PER_PAGE = 200  # 获取的域名个数 值应该在1到1000之间
 
+def status():
+    data = mw.execShell("ps -ef | grep autoshield.py | grep -v grep | awk '{print $2}'")
+    if data[0] == '':
+        return 'stop'
+    return 'start'
 
 # 获取服务运行状态
 def get_status():
-    data = mw.execShell(
-        "ps -ef | grep autoshield.py | grep -v grep | awk '{print $2}'")
+    data = mw.execShell("ps -ef | grep autoshield.py | grep -v grep | awk '{print $2}'")
     runStatus = True
     if data[0] == '':
         runStatus = False
@@ -389,6 +393,8 @@ if __name__ == "__main__":
     elif func == "restart":
         print(restart())
     
+    elif func == 'status':
+        print(status())
     elif func == 'get_status':
         print(get_status())
     elif func == "get_setting":
