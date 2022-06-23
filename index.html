@@ -265,10 +265,12 @@
     function set_security_submit(id) {
         mode = $('.autoshield_set_security_table #security').val()
         layer.load()
-        request_plugin('set_domain_security', { 'id': id, 'mode': mode }, (data) => {
-            if (data['code'] == 200) {
-                $('.' + id + '_tr .domain_security').text(data['data']['mode_name'])
+        request_plugin('set_domain_security', { 'id': id, 'mode': mode }, (res) => {
+            if (res.success == true) {
+                $('.' + id + '_tr .domain_security').text(res.data.mode_name)
                 layer.msg('设置成功', { icon: 1, time: 1500 })
+            } else {
+                layer.msg(res.msg, { icon: 2, time: 1500 })
             }
         })
     }
@@ -311,9 +313,15 @@
 
     function refresh_domain() {
         layer.msg('获取用户域名列表', { icon: 16, time: 0, shade: 0.3 });
-        request_plugin('refresh_domain', {}, (data) => {
+        request_plugin('refresh_domain', {}, (res) => {
+            if (res.success === false) {
+                return layer.msg(res.msg, { icon: 2, time: 1500 })
+            }
             layer.msg('获取域名防御等级(此过程可能耗时较长)', { icon: 16, time: 0, shade: 0.3 });
-            request_plugin('refresh_domain_security', {}, (data) => {
+            request_plugin('refresh_domain_security', {}, (res) => {
+                if (res.success === false) {
+                    return layer.msg(res.msg, { icon: 2, time: 1500 })
+                }
                 layer.msg('保存成功!', { icon: 1, time: 1500 })
                 restart_normal()
             }, false, 0)
@@ -352,7 +360,10 @@
         var load = $('.autoshield_safe #load').val()
 
         layer.load();
-        request_plugin('set_safe', { 'wait': wait, 'sleep': sleep, 'check': check, 'load': load }, (data) => {
+        request_plugin('set_safe', { 'wait': wait, 'sleep': sleep, 'check': check, 'load': load }, (res) => {
+            if (res.success === false) {
+                return layer.msg(res.msg, { icon: 2, time: 1500 })
+            }
             layer.msg('保存成功!', { icon: 1, time: 1500 })
             restart_normal()
         })

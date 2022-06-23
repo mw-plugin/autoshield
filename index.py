@@ -181,7 +181,7 @@ def set_domain_security():
 def setDomainStatus():
     args = __getArgs()
     domainName = args['domainName']
-    res = json.loads(mw.readFile(DOMAIN_FILE_PATH, mode="r+"))
+    res = json.loads(mw.readFile(DOMAIN_FILE_PATH))
     res['domains'][domainName]['status'] = not res['domains'][domainName]['status']
     mw.writeFile(DOMAIN_FILE_PATH, json.dumps(res))
     return __out()
@@ -203,10 +203,7 @@ def refresh_domain():
                 'security': "unknow",
                 'status': True
             }
-            mw.writeFile(
-                DOMAIN_DNS_BASE_PATH + v['name'] + '.json',
-                "{}"
-            )
+            mw.writeFile(DOMAIN_DNS_BASE_PATH + v['name'] + '.json',"{}")
             index.append(v['name'])
         res = {
             'count': count,
@@ -265,7 +262,7 @@ def __transform_mode(mode):
 
 # 通过域名ID获取域名名称
 def __getDomainNameById(id):
-    res = json.loads(mw.readFile(DOMAIN_FILE_PATH, mode="r+"))
+    res = json.loads(mw.readFile(DOMAIN_FILE_PATH))
     for k, v in res['domains'].items():
         if v['id'] == id:
             return k
