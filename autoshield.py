@@ -30,12 +30,11 @@ def writeLog(logMsg):
         import db
         import json
         sql = db.Sql()
-        sql.__DB_FILE = '/www/server/mdserver-web/data/default.db'
+        sql.dbPos("/www/server/mdserver-web/data/", "default")
         mDate = time.strftime('%Y-%m-%d %X', time.localtime())
         data = (PLUGIN_NAME, logMsg, mDate)
         result = sql.table('logs').add('type,log,addtime', data)
     except Exception as e:
-        print(e)
         pass
 
 # 返回服务器的当前负载 (1min)
@@ -61,7 +60,7 @@ def getUserDomainList():
     try:
         data = json.loads(mw.readFile(DOMAIN_FILE_PATH))
     except:
-        writeLog'请检查密钥信息后重试')
+        writeLog('请检查密钥信息后重试')
         print('请检查密钥信息后重试')
         sys.exit()
     return data
@@ -219,7 +218,6 @@ def main():
     # 循环检测
     while True:
         load_now = getLoadNow()
-
         if load_now < load_safe:
             print("当前负载: {load_now}, 小于安全负载({load_safe})"
                   .format(load_now=load_now, load_safe=load_safe))
@@ -289,4 +287,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-   # print (getUserDomainList())
