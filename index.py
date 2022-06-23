@@ -18,7 +18,7 @@ import mw
 
 PLUGIN_NAME = 'autoshield'
 FIREWALL_SERVICE_NAME = 'autoshield.py'
-PLUGIN_PATH = "/www/server/{}/".format(os.getcwd(), PLUGIN_NAME)
+PLUGIN_PATH = "/www/server/{}/".format(PLUGIN_NAME)
 FIREWALL_SERVICE_PATH = PLUGIN_PATH + FIREWALL_SERVICE_NAME
 
 SETTING_FILE_PATH = PLUGIN_PATH + 'config/setting.json'  # setting文件路径
