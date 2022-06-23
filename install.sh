@@ -6,6 +6,8 @@ serverPath="/www/server"
 #配置插件安装目录
 install_tmp=${rootPath}/mdserver-web/tmp/mw_install.pl
 
+version="2.0.1"
+
 #安装
 Install()
 {
@@ -18,7 +20,9 @@ Install()
 
 	#创建初始文件
 	mkdir -p $serverPath/autoshield
-	echo '2.0.1' > $serverPath/autoshield/version.pl
+	echo $version > $serverPath/autoshield/version.pl
+
+	ln -s $serverPath/mdserver-web/plugins/autoshield/service/autoshield.service /lib/systemd/system/autoshield.service
 	ln -s $serverPath/mdserver-web/plugins/autoshield/autoshield.py $serverPath/autoshield/autoshield.py
 	ln -s $serverPath/mdserver-web/plugins/autoshield/serviced.py $serverPath/autoshield/serviced.py
 
@@ -26,7 +30,6 @@ Install()
 	mkdir $serverPath/autoshield/config/dns
 	mkdir $serverPath/autoshield/log
 	
-	cp $serverPath/mdserver-web/plugins/autoshield/service/autoshield.service /lib/systemd/system/autoshield.service
 	systemctl daemon-reload
 	systemctl enable autoshield
 	#依赖安装结束

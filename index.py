@@ -240,8 +240,6 @@ def refresh_domain_security():
 
 # 获取安全负载
 def get_safe_load():
-    cpuCount = psutil.cpu_count()
-    safe_load = cpuCount * 1.75
     return __out(True, "", __getSafeLoad())
 
 # 转换mode 名称
