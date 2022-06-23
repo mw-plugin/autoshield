@@ -34,6 +34,7 @@ def status():
         return 'stop'
     return 'start'
 
+
 # 获取服务运行状态
 def get_status():
     data = mw.execShell("ps -ef | grep autoshield.py | grep -v grep | awk '{print $2}'")
@@ -82,26 +83,28 @@ def get_domain():
 # 获取防御等级
 def get_safe():
     _safeLoad = __getSafeLoad()['safe_load']
-    data = {
+    default = {
         "wait": 300,  # 负载恢复后的等待周期
         "sleep": 5,  # 检测周期
         "check": 30,  # 持续监测时间
         "load": _safeLoad,  # 安全负载
     }
     if not os.path.exists(SAFE_FILE_PATH):
-        mw.writeFile(SAFE_FILE_PATH, json.dumps(data))
+        mw.writeFile(SAFE_FILE_PATH, json.dumps(default))
+
     try:
         data = json.loads(mw.readFile(SAFE_FILE_PATH))
-        data = {
+        result = {
             "wait": data['wait'] if data['wait'] else 300,
             "sleep": data['sleep'] if data['sleep'] else 5,
             "check": data['check'] if data['check'] else 30,
             "load": data['load'] if data['load'] else _safeLoad,
         }
     except:
-        mw.writeFile(SAFE_FILE_PATH, json.dumps(data))
+        mw.writeFile(SAFE_FILE_PATH, json.dumps(default))
+        result = default
 
-    return __out(data=data)
+    return __out(data=result)
 
 
 # 启动服务
@@ -114,6 +117,7 @@ def start():
 def stop():
     mw.execShell("systemctl stop autoshield")
     return __out(True)
+
 
 # 重启服务
 def restart():
@@ -287,7 +291,7 @@ def __out(success: bool = True, msg: str = "ok", data: dict = {}):
         "msg": msg,
         "data": data
     })
-    
+
 
 def __getArgs():
     args = sys.argv[2:]
@@ -392,7 +396,7 @@ if __name__ == "__main__":
         print(stop())
     elif func == "restart":
         print(restart())
-    
+
     elif func == 'status':
         print(status())
     elif func == 'get_status':
@@ -403,7 +407,7 @@ if __name__ == "__main__":
         print(get_domain())
     elif func == 'get_safe':
         print(get_safe())
-    
+
     elif func == "set_setting":
         print(set_setting())
     elif func == "set_safe":
@@ -412,7 +416,7 @@ if __name__ == "__main__":
         print(set_domain_security())
     elif func == "set_domain_status":
         print(set_domain_status())
-        
+
     elif func == "refresh_domain":
         print(refresh_domain())
     elif func == "refresh_domain_security":
