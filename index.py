@@ -31,8 +31,11 @@ PER_PAGE = 200  # 获取的域名个数 值应该在1到1000之间
 
 # 获取服务运行状态
 def get_status():
-    result = mw.execShell('systemctl status autoshield')
-    runStatus = "running" in result[0]
+    data = mw.execShell(
+        "ps -ef | grep autoshield.py | grep -v grep | awk '{print $2}'")
+    runStatus = True
+    if data[0] == '':
+        runStatus = False
     return __out(data={'runStatus': runStatus})
 
 
@@ -109,7 +112,7 @@ def stop():
     return __out(True)
 
 # 重启服务
-def stop():
+def restart():
     mw.execShell("systemctl restart autoshield")
     return __out(True)
 
