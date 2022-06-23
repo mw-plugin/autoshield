@@ -23,7 +23,8 @@ SETTING_FILE_PATH = PLUGIN_PATH + 'config/setting.json'  # setting文件路径
 SAFE_FILE_PATH = PLUGIN_PATH + 'config/safe.json'  # safe文件路径
 DOMAIN_FILE_PATH = PLUGIN_PATH + 'config/domain.json'  # 用户域名temp文件路径
 
-def writeLog(type, logMsg):
+
+def writeLog(logMsg):
     try:
         import time
         import db
@@ -31,13 +32,15 @@ def writeLog(type, logMsg):
         sql = db.Sql()
         sql.__DB_FILE = '/www/server/mdserver-web/data/default.db'
         mDate = time.strftime('%Y-%m-%d %X', time.localtime())
-        data = (type, logMsg, mDate)
+        data = (PLUGIN_NAME, logMsg, mDate)
         result = sql.table('logs').add('type,log,addtime', data)
     except Exception as e:
         print(e)
         pass
-    
+
 # 返回服务器的当前负载 (1min)
+
+
 def getLoadNow():
     return os.getloadavg()[0]
 
@@ -47,7 +50,7 @@ def getSafeInfo():
     try:
         data = json.loads(mw.readFile(SAFE_FILE_PATH))
     except:
-        writeLog(PLUGIN_NAME, '请正确配置防护设置后重试')
+        writeLog('请正确配置防护设置后重试')
         print('请正确配置防护设置后重试')
         sys.exit()
     return data
@@ -58,7 +61,7 @@ def getUserDomainList():
     try:
         data = json.loads(mw.readFile(DOMAIN_FILE_PATH))
     except:
-        writeLog(PLUGIN_NAME, '请检查密钥信息后重试')
+        writeLog'请检查密钥信息后重试')
         print('请检查密钥信息后重试')
         sys.exit()
     return data
@@ -88,7 +91,6 @@ def underAttack():
                 changeDomainSecurity(domainName, 'under_attack')
             else:
                 writeLog(
-                    PLUGIN_NAME,
                     '自动开盾时,{domain_name}开盾失败 > {error}'
                     .format(domain_name=domainName, error=json.dumps(response['errors']))
                 )
@@ -96,7 +98,6 @@ def underAttack():
         else:
             print('用户未开启,跳过')
     writeLog(
-        PLUGIN_NAME,
         '服务器遭遇攻击 > 开盾'
     )
 
@@ -120,7 +121,6 @@ def closeShield():
                 changeDomainSecurity(domainName, 'medium')
             else:
                 writeLog(
-                    PLUGIN_NAME,
                     '关盾时,{domain_name}关闭失败 > {error}'
                     .format(domain_name=domainName, error=json.dumps(response['errors']))
                 )
@@ -128,7 +128,6 @@ def closeShield():
         else:
             print('用户未开启,跳过')
     writeLog(
-        PLUGIN_NAME,
         '服务器遭遇攻击结束 > 关盾'
     )
 
@@ -225,10 +224,8 @@ def main():
             print("当前负载: {load_now}, 小于安全负载({load_safe})"
                   .format(load_now=load_now, load_safe=load_safe))
         else:
-            writeLog(
-                PLUGIN_NAME, "服务器负载超过设定阀值,数值为{load_now} > 持续等待{check}秒判断"
-                .format(load_now=load_now, check=check)
-            )
+            writeLog("服务器负载超过设定阀值,数值为{load_now} > 持续等待{check}秒判断"
+                     .format(load_now=load_now, check=check))
             print("当前负载: {load_now}, 高于安全负载({load_safe}) > 持续等待{check}秒判断"
                   .format(load_now=load_now, load_safe=load_safe, check=check)
                   )
@@ -281,10 +278,9 @@ def main():
                     print('当前负载: {load_now} < 安全负载: {load_safe} > 威胁解除'
                           .format(load_now=load_now, load_safe=load_safe)
                           )
-                    writeLog(
-                        PLUGIN_NAME, "服务器负载在{time_pass}后恢复到负载阀值以下,当前负载为{load_now} > 威胁解除"
-                        .format(load_now=load_now, time_pass=time_pass)
-                    )
+                    writeLog("服务器负载在{time_pass}后恢复到负载阀值以下,当前负载为{load_now} > 威胁解除"
+                             .format(load_now=load_now, time_pass=time_pass)
+                             )
                     break
                 time.sleep(1)
 
