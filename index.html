@@ -202,8 +202,10 @@
             "
             $('.plugin_body').html(html);
             request_plugin('get_domain', {}, function (rdata) {
+                if (rdata.success === false) {
+                    return layer.msg(rdata.msg, { icon: 2, time: 1500 })
+                }
                 data = rdata.data
-                //console.log(data)
                 Object.keys(data).forEach((domain, index) => {
                     value = data[domain]
                     id = value['id']
