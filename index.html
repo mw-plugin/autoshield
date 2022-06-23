@@ -278,7 +278,7 @@
     function set_status(obj) {
         domainName = $(obj).attr('domain_name')
         layer.msg('请稍等...', { icon: 16, time: 0, shade: 0.3 });
-        request_plugin('setDomainStatus', { 'domainName': domainName }, (data) => {
+        request_plugin('set_domain_status', { 'domainName': domainName }, (data) => {
             layer.msg('操作成功!', { icon: 1, time: 1500 })
         })
     }
@@ -300,8 +300,11 @@
     }
 
     function restart() {
-        stop()
-        start()
+        layer.msg('重启服务中...', { icon: 16, time: 0, shade: 0.3 });
+        request_plugin('restart', {}, (data) => {
+            layer.msg('重启', { icon: 1, time: 1500 })
+            autoshield.get_index()
+        })
     }
 
     function restart_normal() {

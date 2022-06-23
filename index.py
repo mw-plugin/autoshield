@@ -31,8 +31,8 @@ PER_PAGE = 200  # 获取的域名个数 值应该在1到1000之间
 
 # 获取服务运行状态
 def get_status():
-    result = mw.execShell('ps -C {} -f'.format(FIREWALL_SERVICE_NAME))
-    runStatus = FIREWALL_SERVICE_NAME in result[0]
+    result = mw.execShell('systemctl status autoshield')
+    runStatus = "running" in result[0]
     return __out(data={'runStatus': runStatus})
 
 
@@ -74,7 +74,6 @@ def get_domain():
 
 # 获取防御等级
 def get_safe():
-
     _safeLoad = __getSafeLoad()['safe_load']
     data = {
         "wait": 300,  # 负载恢复后的等待周期
@@ -107,6 +106,11 @@ def start():
 # 停止服务
 def stop():
     mw.execShell("systemctl stop autoshield")
+    return __out(True)
+
+# 重启服务
+def stop():
+    mw.execShell("systemctl restart autoshield")
     return __out(True)
 
 
@@ -144,9 +148,8 @@ def set_safe():
     }))
     return __out()
 
+
 # 设置域名security mode
-
-
 def set_domain_security():
     args = __getArgs()
     id = args['id']
@@ -178,7 +181,7 @@ def set_domain_security():
 
 
 # 设置域名是否自动开盾
-def setDomainStatus():
+def set_domain_status():
     args = __getArgs()
     domainName = args['domainName']
     res = json.loads(mw.readFile(DOMAIN_FILE_PATH))
@@ -376,7 +379,14 @@ if __name__ == "__main__":
     pass
 
     func = sys.argv[1]
-    if func == 'get_status':
+    if func == "start":
+        print(start())
+    elif func == "stop":
+        print(stop())
+    elif func == "restart":
+        print(restart())
+    
+    elif func == 'get_status':
         print(get_status())
     elif func == "get_setting":
         print(get_setting())
@@ -384,19 +394,16 @@ if __name__ == "__main__":
         print(get_domain())
     elif func == 'get_safe':
         print(get_safe())
-    elif func == "start":
-        print(start())
-    elif func == "stop":
-        print(stop())
+    
     elif func == "set_setting":
         print(set_setting())
     elif func == "set_safe":
         print(set_safe())
-
     elif func == "set_domain_security":
         print(set_domain_security())
-    elif func == "setDomainStatus":
-        print(setDomainStatus())
+    elif func == "set_domain_status":
+        print(set_domain_status())
+        
     elif func == "refresh_domain":
         print(refresh_domain())
     elif func == "refresh_domain_security":

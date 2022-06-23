@@ -24,7 +24,6 @@ Install()
 
 	ln -s $serverPath/mdserver-web/plugins/autoshield/service/autoshield.service /lib/systemd/system/autoshield.service
 	ln -s $serverPath/mdserver-web/plugins/autoshield/autoshield.py $serverPath/autoshield/autoshield.py
-	ln -s $serverPath/mdserver-web/plugins/autoshield/serviced.py $serverPath/autoshield/serviced.py
 
 	mkdir $serverPath/autoshield/config
 	mkdir $serverPath/autoshield/config/dns
